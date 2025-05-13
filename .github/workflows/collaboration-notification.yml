@@ -1,0 +1,57 @@
+name: Collaboration Notifications
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened, closed]
+  discussion:
+    types: [created]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification (Issue Opened)
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: appleboy/discord-action@1.4.1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            📢 새로운 이슈가 등록되었습니다!
+            제목: ${{ github.event.issue.title }}
+            작성자: ${{ github.event.issue.user.login }}
+            링크: ${{ github.event.issue.html_url }}
+
+      - name: Send Discord Notification (Pull Request Opened)
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        uses: appleboy/discord-action@1.4.1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            🛠️ 새로운 풀 리퀘스트가 생성되었습니다!
+            제목: ${{ github.event.pull_request.title }}
+            작성자: ${{ github.event.pull_request.user.login }}
+            링크: ${{ github.event.pull_request.html_url }}
+
+      - name: Send Discord Notification (Pull Request Merged)
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        uses: appleboy/discord-action@1.4.1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            ✅ 풀 리퀘스트가 병합되었습니다!
+            제목: ${{ github.event.pull_request.title }}
+            병합자: ${{ github.event.pull_request.merged_by.login }}
+            링크: ${{ github.event.pull_request.html_url }}
+
+      - name: Send Discord Notification (Discussion Created)
+        if: github.event_name == 'discussion' && github.event.action == 'created'
+        uses: appleboy/discord-action@1.4.1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            🗣️ 새로운 토론이 시작되었습니다!
+            제목: ${{ github.event.discussion.title }}
+            작성자: ${{ github.event.discussion.user.login }}
+            링크: ${{ github.event.discussion.html_url }}
